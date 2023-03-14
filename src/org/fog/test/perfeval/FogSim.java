@@ -122,7 +122,8 @@ public class FogSim extends CloudSim {
 				SimEvent next = fit.next();
 				entsorce = entities.get( next.getSource());			
 				entdest = entities.get( next.getDestination());	
-
+				
+//have concern on this if statement why we should compare time?
 				if (next.eventTime() == first.eventTime()) {					
 					if (entsorce.getName().startsWith("m-V")) {
 						processEvent(next);
@@ -140,6 +141,9 @@ public class FogSim extends CloudSim {
 			}
 			future.removeAll(toRemove);			
 			toRemove.clear();
+
+			fit = future.iterator();
+			first = fit.next();
 
 			Iterator<SimEvent> fit2 = future.iterator();
 			trymore = fit2.hasNext();
@@ -181,6 +185,7 @@ public class FogSim extends CloudSim {
 			boolean trymore = fit.hasNext();
 			while (trymore) {
 				SimEvent next = fit.next();
+				//manju have some concern on this if statement 
 				if (next.eventTime() == first.eventTime()) {					 
 					processEvent(next);
 					toRemove.add(next);
