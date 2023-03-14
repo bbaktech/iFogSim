@@ -448,7 +448,7 @@ public abstract class SimEntity implements Cloneable {
 	 * 
 	 * @return the state
 	 */
-	protected int getState() {
+	public int getState() {
 		return state;
 	}
 
@@ -479,7 +479,7 @@ public abstract class SimEntity implements Cloneable {
 	 * 
 	 * @param state the new state
 	 */
-	protected void setState(int state) {
+	public void setState(int state) {
 		this.state = state;
 	}
 
@@ -497,7 +497,7 @@ public abstract class SimEntity implements Cloneable {
 	 * 
 	 * @param e the new event buffer
 	 */
-	protected void setEventBuffer(SimEvent e) {
+	public void setEventBuffer(SimEvent e) {
 		evbuf = e;
 	}
 

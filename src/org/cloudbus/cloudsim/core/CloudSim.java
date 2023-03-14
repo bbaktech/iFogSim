@@ -40,27 +40,29 @@ public class CloudSim {
 	private static final String CLOUDSIM_VERSION_STRING = "3.0";
 
 	/** The id of CIS entity. */
-	private static int cisId = -1;
+	protected static int cisId = -1;
 
 	/** The id of CloudSimShutdown entity. */
 	@SuppressWarnings("unused")
-	private static int shutdownId = -1;
+	protected
+	static int shutdownId = -1;
 
 	/** The CIS object. */
-	private static CloudInformationService cis = null;
+	protected static CloudInformationService cis = null;
 
 	/** The Constant NOT_FOUND. */
 	private static final int NOT_FOUND = -1;
 
 	/** The trace flag. */
 	@SuppressWarnings("unused")
-	private static boolean traceFlag = false;
+	protected
+	static boolean traceFlag = false;
 
 	/** The calendar. */
-	private static Calendar calendar = null;
+	protected static Calendar calendar = null;
 
 	/** The termination time. */
-	private static double terminateAt = -1;
+	protected static double terminateAt = -1;
 
 	/** The minimal time between events. Events within shorter periods after the last event are discarded. */
 	private static double minTimeBetweenEvents = 0.1;
@@ -308,7 +310,7 @@ public class CloudSim {
 	// ======== SIMULATION METHODS ===============//
 
 	/** The entities. */
-	private static List<SimEntity> entities;
+	protected static List<SimEntity> entities;
 
 	/** The future event queue. */
 	protected static FutureQueue future;
@@ -317,26 +319,26 @@ public class CloudSim {
 	protected static DeferredQueue deferred;
 
 	/** The simulation clock. */
-	private static double clock;
+	protected static double clock;
 
 	/** Flag for checking if the simulation is running. */
-	private static boolean running;
+	protected static boolean running;
 
 	/** The entities by name. */
 	private static Map<String, SimEntity> entitiesByName;
 
 	// The predicates used in entity wait methods
 	/** The wait predicates. */
-	private static Map<Integer, Predicate> waitPredicates;
+	protected static Map<Integer, Predicate> waitPredicates;
 
 	/** The paused. */
-	private static boolean paused = false;
+	protected static boolean paused = false;
 
 	/** The pause at. */
-	private static long pauseAt = -1;
+	protected static long pauseAt = -1;
 
 	/** The abrupt terminate. */
-	private static boolean abruptTerminate = false;
+	protected static boolean abruptTerminate = false;
 
 	/**
 	 * Initialise the simulation for stand alone simulations. This function should be called at the
