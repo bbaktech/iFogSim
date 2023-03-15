@@ -50,7 +50,7 @@ public class DeferredQueue {
 		SimEvent event;
 		while (iterator.hasNext()) {
 			event = iterator.next();
-			if (event.eventTime() > eventTime) {
+			if (event.eventTime() >= eventTime) {
 				iterator.previous();
 				iterator.add(newEvent);
 				return;

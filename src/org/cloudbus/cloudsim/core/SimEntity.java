@@ -11,6 +11,7 @@ package org.cloudbus.cloudsim.core;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.NetworkTopology;
 import org.cloudbus.cloudsim.core.predicates.Predicate;
+import org.fog.test.perfeval.FogSim;
 
 /**
  * This class represents a simulation entity. An entity handles events and can send events to other
@@ -93,6 +94,12 @@ public abstract class SimEntity implements Cloneable {
 		CloudSim.send(id, dest, delay, tag, data);
 	}
 
+	public void priority_schedule(int dest, double delay, int tag, Object data) {
+		if (!CloudSim.running()) {
+			return;
+		}
+		CloudSim.priority_send(id, dest, delay, tag, data);		
+	}
 	/**
 	 * Send an event to another entity by id number and with <b>no</b> data. Note that the tag
 	 * <code>9999</code> is reserved.
@@ -540,8 +547,32 @@ public abstract class SimEntity implements Cloneable {
 		if (entityId != srcId) {// does not delay self messages
 			delay += getNetworkDelay(srcId, entityId);
 		}
+//		schedule(entityId, delay, cloudSimTag, data);
 
-		schedule(entityId, delay, cloudSimTag, data);
+		if (FogSim.SheduleMethod == 0)
+		{
+			schedule(entityId, delay, cloudSimTag, data);	
+			return;
+		}
+		if (FogSim.SheduleMethod == 1)
+		{ 		
+			SimEntity entdest = CloudSim.entities.get(entityId);	
+			if (getName().startsWith("m-V")) {
+				priority_schedule(entityId, delay, cloudSimTag, data);
+				return;
+			}
+			if (entdest.getName().startsWith("m-V")){
+				priority_schedule(entityId, delay, cloudSimTag, data);
+				return;
+			}
+			schedule(entityId, delay, cloudSimTag, data);
+			return;
+		}
+		if (FogSim.SheduleMethod == 2)
+		{
+			schedule(entityId, delay, cloudSimTag, data);	
+		}
+		return;
 	}
 
 	/**

@@ -21,6 +21,7 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.predicates.Predicate;
 import org.cloudbus.cloudsim.core.predicates.PredicateAny;
 import org.cloudbus.cloudsim.core.predicates.PredicateNone;
+import org.fog.test.perfeval.FogSim;
 
 /**
  * This class extends the CloudSimCore to enable network simulation in CloudSim. Also, it disables
@@ -44,8 +45,7 @@ public class CloudSim {
 
 	/** The id of CloudSimShutdown entity. */
 	@SuppressWarnings("unused")
-	protected
-	static int shutdownId = -1;
+	protected	static int shutdownId = -1;
 
 	/** The CIS object. */
 	protected static CloudInformationService cis = null;
@@ -605,6 +605,16 @@ public class CloudSim {
 
 		SimEvent e = new SimEvent(SimEvent.SEND, clock + delay, src, dest, tag, data);
 		future.addEvent(e);
+	}
+	
+	public static void priority_send(int src, int dest, double delay, int tag, Object data) {
+		if (delay < 0) {
+			throw new IllegalArgumentException("Send delay can't be negative.");
+		}
+		SimEvent e = new SimEvent(SimEvent.SEND, clock + delay, src, dest, tag, data);
+//		if (FogSim.iteration_count < 10) future.addEvent(e);	
+//		else  
+			future.priority_addEvent(e);		
 	}
 
 	/**

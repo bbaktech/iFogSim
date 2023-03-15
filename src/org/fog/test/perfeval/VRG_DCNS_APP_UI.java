@@ -139,8 +139,7 @@ public class VRG_DCNS_APP_UI {
 			
 			FogBroker broker0 = new FogBroker("broker_0");
 			FogBroker broker1 = new FogBroker("broker_1");
-			
-			
+						
 			Application application0 = createApplication0(appId0, broker0.getId());
 			Application application1 = createApplication1(appId1, broker1.getId());
 			application0.setUserId(broker0.getId());
@@ -149,7 +148,7 @@ public class VRG_DCNS_APP_UI {
 			createIoTNetworktopology();			
 			createEdgeDevicesVRG(broker0.getId(), appId0);
 			createEdgeDevicesDCNS(broker1.getId(), appId1);
-/*			
+			
 			System.out.println("==Devices==");
 			for(FogDevice device : fogDevices) {
 				System.out.println(device.getName() +" (" + device.getHost().getTotalMips() + ")");				
@@ -166,7 +165,7 @@ public class VRG_DCNS_APP_UI {
 			for(Actuator device : actuators) {
 				System.out.println(device.getName());				
 			}
-*/						
+						
 			ModuleMapping moduleMapping_0 = ModuleMapping.createModuleMapping(); // initializing a module mapping
 			ModuleMapping moduleMapping_1 = ModuleMapping.createModuleMapping(); // initializing a module mapping
 			
@@ -186,15 +185,28 @@ public class VRG_DCNS_APP_UI {
 				moduleMapping_1.addModuleToDevice("object_tracker", device.getName()); // placing all instances of Object Tracker module in the FogDevices
 				}
 			}
+
 			//this class has last part to display summary - simulation results.
 			Controller controller = new Controller("master-controller", fogDevices, sensors, 
 					actuators);
-			
-			System.out.println("==App0==");
-			controller.submitApplication(application0, new ModulePlacementMapping(fogDevices, application0, moduleMapping_0));
-			System.out.println("==App1==");		
-			controller.submitApplication(application1, new ModulePlacementMapping(fogDevices, application1, moduleMapping_1));
 
+			if ( 0== FogSim.SheduleMethod) {
+				System.out.println("==App0==");
+				controller.submitApplication(application0, new ModulePlacementMapping(fogDevices, application0, moduleMapping_0));
+				System.out.println("==App1==");		
+				controller.submitApplication(application1, new ModulePlacementMapping(fogDevices, application1, moduleMapping_1));
+			} else if ( 1== FogSim.SheduleMethod) {
+				System.out.println("==App0==");
+				controller.submitApplication(application0, new ModulePlacementPriorityWise(fogDevices,sensors, actuators,application0, moduleMapping_0));
+				System.out.println("==App1==");		
+				controller.submitApplication(application1, new ModulePlacementPriorityWise(fogDevices,sensors, actuators, application1, moduleMapping_1));				
+			} else {
+				System.out.println("==App0==");
+				controller.submitApplication(application0, new ModulePlacementWOA(fogDevices, application0, moduleMapping_0));
+				System.out.println("==App1==");		
+				controller.submitApplication(application1, new ModulePlacementWOA(fogDevices, application1, moduleMapping_1));				
+				
+			}
 			TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 
 			FogSim.startSimulation();

@@ -26,6 +26,7 @@ public class SimEvent implements Cloneable, Comparable<SimEvent> {
 	/** time that the event was removed from the queue for service **/
 	private double endWaitingTime;
 
+	public boolean priority; 
 	/** id of entity who scheduled event **/
 	private int entSrc;
 
@@ -33,7 +34,7 @@ public class SimEvent implements Cloneable, Comparable<SimEvent> {
 	private int entDst;
 
 	/** the user defined type of the event **/
-	private final int tag;
+	public final int tag;
 
 	/** any data the event is carrying **/
 	private final Object data;
@@ -61,6 +62,7 @@ public class SimEvent implements Cloneable, Comparable<SimEvent> {
 		entDst = -1;
 		tag = -1;
 		data = null;
+		priority = false;
 	}
 
 	// ------------------- PACKAGE LEVEL METHODS --------------------------
@@ -71,6 +73,8 @@ public class SimEvent implements Cloneable, Comparable<SimEvent> {
 		entDst = dest;
 		this.tag = tag;
 		data = edata;
+		priority = false;
+
 	}
 
 	SimEvent(int evtype, double time, int src) {
@@ -80,6 +84,8 @@ public class SimEvent implements Cloneable, Comparable<SimEvent> {
 		entDst = -1;
 		tag = -1;
 		data = null;
+		priority = false;
+
 	}
 
 	protected void setSerial(long serial) {
@@ -119,7 +125,14 @@ public class SimEvent implements Cloneable, Comparable<SimEvent> {
 	public int compareTo(SimEvent event) {
 		if (event == null) {
 			return 1;
-		} else if (time < event.time) {
+		}
+		if (event.priority)
+			return 1;
+		
+		if (priority)
+			return -1;
+		
+		if (time < event.time) {
 			return -1;
 		} else if (time > event.time) {
 			return 1;

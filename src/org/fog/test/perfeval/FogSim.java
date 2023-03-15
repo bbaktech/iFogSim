@@ -12,7 +12,7 @@ import org.cloudbus.cloudsim.core.predicates.Predicate;
 
 public class FogSim extends CloudSim {
 	
-    protected static long iteration_count = 0;  //by manju Manju
+    public static long iteration_count = 0;  //by manju Manju
     public static  int SheduleMethod = 0;  // 0->FCFS,1->PS,2->WOA
     
     
@@ -62,8 +62,8 @@ public class FogSim extends CloudSim {
 		
 		int entities_size = entities.size();
 		
-//		if (iteration_count< 50) 
-//			System.out.println( "=================Sarted Slot:" + iteration_count); 
+		if (iteration_count< 50) 
+			System.out.println( "=================Sarted Slot:" + iteration_count); 
 		
 		for (int i = 0; i < entities_size; i++ ) {
 			ent = entities.get(i);
@@ -80,8 +80,8 @@ public class FogSim extends CloudSim {
 			break;
 		case 1:
 			update_futureQueByShaduling();
-			queue_empty = executeHighPriorityTasks();
-//			queue_empty= executeLowPriorityTasks();
+			queue_empty = executeAllTasks();
+//			queue_empty = executeHighPriorityTasks();
 			break;			
 		case 2:
 			update_futureQueByShaduling();
@@ -172,6 +172,7 @@ public class FogSim extends CloudSim {
 		
 		boolean queue_empty;
 		if (future.size() > 0) {
+
 			List<SimEvent> toRemove = new ArrayList<SimEvent>();
 			Iterator<SimEvent> fit = future.iterator();
 			queue_empty = false;
@@ -184,9 +185,11 @@ public class FogSim extends CloudSim {
 			// Check if next events are at same time...
 			boolean trymore = fit.hasNext();
 			while (trymore) {
+
 				SimEvent next = fit.next();
 				//manju have some concern on this if statement 
-				if (next.eventTime() == first.eventTime()) {					 
+				if (next.eventTime() == first.eventTime()) {
+//					System.out.println( "executeAllTasks:"+future.size()); 
 					processEvent(next);
 					toRemove.add(next);
 					trymore = fit.hasNext();
@@ -194,11 +197,14 @@ public class FogSim extends CloudSim {
 					trymore = false;
 				}
 			}
+
 			future.removeAll(toRemove);
+			toRemove.clear();
 		} else {
 			queue_empty = true;
 			running = false;
 		}
+
 		// If there are more future events then deal with them
 		return queue_empty;
 	}

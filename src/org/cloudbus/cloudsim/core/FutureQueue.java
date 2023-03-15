@@ -96,4 +96,12 @@ public class FutureQueue {
 		sortedSet.clear();
 	}
 
+	public void priority_addEvent(SimEvent newEvent) {
+		// TODO Auto-generated method stub
+		if ( 51 == newEvent.tag) 
+			newEvent.priority = true;
+		newEvent.setSerial(serial++);
+		sortedSet.add(newEvent);		
+	}
+
 }
