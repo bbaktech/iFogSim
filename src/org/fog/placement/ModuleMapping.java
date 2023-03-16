@@ -38,6 +38,5 @@ public class ModuleMapping {
 			getModuleMapping().put(deviceName, new ArrayList<String>());
 		if(!getModuleMapping().get(deviceName).contains(moduleName))
 			getModuleMapping().get(deviceName).add(moduleName);
-	}
-	
+	}	
 }

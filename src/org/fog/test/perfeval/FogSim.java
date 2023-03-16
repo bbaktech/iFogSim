@@ -62,8 +62,8 @@ public class FogSim extends CloudSim {
 		
 		int entities_size = entities.size();
 		
-		if (iteration_count< 50) 
-			System.out.println( "=================Sarted Slot:" + iteration_count); 
+//		if (iteration_count< 50) 
+//			System.out.println( "=================Sarted Slot:" + iteration_count); 
 		
 		for (int i = 0; i < entities_size; i++ ) {
 			ent = entities.get(i);
@@ -72,7 +72,7 @@ public class FogSim extends CloudSim {
 			}
 
 		}		
-		//resourse sheduling WOS
+
 		switch (SheduleMethod) {
 		case 0: //FCFS
 			update_futureQueByShaduling();
@@ -85,8 +85,7 @@ public class FogSim extends CloudSim {
 			break;			
 		case 2:
 			update_futureQueByShaduling();
-			System.out.println("WO Algorithem Not Ready");
-			System.exit(0);
+			queue_empty = executeAllTasks();
 			break;
 		}
 		

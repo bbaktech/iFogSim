@@ -556,6 +556,7 @@ public abstract class SimEntity implements Cloneable {
 		}
 		if (FogSim.SheduleMethod == 1)
 		{ 		
+/*
 			SimEntity entdest = CloudSim.entities.get(entityId);	
 			if (getName().startsWith("m-V")) {
 				priority_schedule(entityId, delay, cloudSimTag, data);
@@ -565,6 +566,7 @@ public abstract class SimEntity implements Cloneable {
 				priority_schedule(entityId, delay, cloudSimTag, data);
 				return;
 			}
+			*/
 			schedule(entityId, delay, cloudSimTag, data);
 			return;
 		}
