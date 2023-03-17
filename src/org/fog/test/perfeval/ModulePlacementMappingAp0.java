@@ -59,18 +59,6 @@ public class ModulePlacementMappingAp0 extends ModulePlacement{
 
 			break;
 		case 1:
-			for(FogDevice device : fogDevices){
-				if(device.getName().startsWith("m-V")){
-					moduleMapping.addModuleToDevice("client", device.getName());  // fixing all instances of the Client module to the Smartphones
-				}
-				if(device.getName().startsWith("d")){
-					moduleMapping.addModuleToDevice("coordinator", device.getName());  
-					moduleMapping.addModuleToDevice("concentration_calculator", device.getName()); // fixing all instances of the Concentration Calculator module to the FogDevices
-				}
-			}
-
-			break;
-		case 2:
 			moduleMapping.addModuleToDevice("coordinator", "cloud"); // fixing all instances of the coordinator module to the Cloud
 			for(FogDevice device : fogDevices){
 				if(device.getName().startsWith("m-V")){
@@ -81,6 +69,11 @@ public class ModulePlacementMappingAp0 extends ModulePlacement{
 				}
 			}
 
+			break;
+		case 2:
+			moduleMapping.addModuleToDevice("coordinator", "cloud"); // fixing all instances of the coordinator module to the Cloud
+			moduleMapping.addModuleToDevice("client", "cloud");  // fixing all instances of the Client module to the Smartphones
+			moduleMapping.addModuleToDevice("concentration_calculator", "cloud"); // fixing all instances of the Concentration Calculator module to the FogDevices
 			break;
 		
 		}

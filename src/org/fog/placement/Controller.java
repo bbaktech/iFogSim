@@ -15,6 +15,7 @@ import org.fog.application.Application;
 import org.fog.entities.Actuator;
 import org.fog.entities.FogDevice;
 import org.fog.entities.Sensor;
+import org.fog.test.perfeval.FogSim;
 import org.fog.utils.Config;
 import org.fog.utils.FogEvents;
 import org.fog.utils.FogUtils;
@@ -31,7 +32,7 @@ public class Controller extends SimEntity{
 	
 	private Map<String, Application> applications;
 	private Map<String, Integer> appLaunchDelays;
-
+    private String result_string = null;
 	private Map<String, ModulePlacement> appModulePlacementPolicy;
 	
 	public Controller(String name, List<FogDevice> fogDevices, List<Sensor> sensors, List<Actuator> actuators) {
@@ -99,10 +100,12 @@ public class Controller extends SimEntity{
 			break;
 		case FogEvents.STOP_SIMULATION:
 			CloudSim.stopSimulation();
+			result_string = "Result:" + FogSim.SheduleMethod +"," ;
 			printTimeDetails();
 			printPowerDetails();
 			printCostDetails();
 			printNetworkUsageDetails();
+			System.out.println(result_string);
 			System.exit(0);
 			break;
 			
@@ -110,7 +113,8 @@ public class Controller extends SimEntity{
 	}
 	
 	private void printNetworkUsageDetails() {
-		System.out.println("Total network usage = "+NetworkUsageMonitor.getNetworkUsage()/Config.MAX_SIMULATION_TIME);		
+		System.out.println("Total network usage = "+NetworkUsageMonitor.getNetworkUsage()/Config.MAX_SIMULATION_TIME);
+		result_string = result_string + NetworkUsageMonitor.getNetworkUsage()/ Config.MAX_SIMULATION_TIME +",";
 	}
 
 	private FogDevice getCloud(){
@@ -122,6 +126,7 @@ public class Controller extends SimEntity{
 	
 	private void printCostDetails(){
 		System.out.println("Cost of execution in cloud = "+getCloud().getTotalCost());
+		result_string = result_string + getCloud().getTotalCost() +",";
 	}
 	
 	private void printPowerDetails() {
@@ -160,6 +165,8 @@ public class Controller extends SimEntity{
 			}
 			System.out.println(getStringForLoopId(loopId) + " ---> "+(average/count));*/
 			System.out.println(getStringForLoopId(loopId) + " ---> "+TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId));
+			result_string = result_string + TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId)+ ",";
+			
 		}
 		System.out.println("=========================================");
 		System.out.println("TUPLE CPU EXECUTION DELAY");

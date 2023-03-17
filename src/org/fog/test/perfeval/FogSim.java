@@ -81,8 +81,8 @@ public class FogSim extends CloudSim {
 			break;
 		case 1:
 			update_futureQueByShaduling();
-//			queue_empty = executeAllTasks();
-			queue_empty = executeHighPriorityTasks();
+			queue_empty = executeAllTasks();
+//			queue_empty = executeHighPriorityTasks();
 			break;			
 		case 2:
 			update_futureQueByShaduling();
