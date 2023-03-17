@@ -15,7 +15,8 @@ public class FogSim extends CloudSim {
     public static long iteration_count = 0;  //by manju Manju
     public static  int SheduleMethod = 0;  // 0->FCFS,1->PS,2->WOA
     
-    
+    protected static void updateClock() {
+    }
 	protected static void update_futureQueByShaduling()
 	{
 		int dest, src;
@@ -62,8 +63,8 @@ public class FogSim extends CloudSim {
 		
 		int entities_size = entities.size();
 		
-//		if (iteration_count< 50) 
-//			System.out.println( "=================Sarted Slot:" + iteration_count); 
+		if (iteration_count< 50) 
+			System.out.println( "=================Sarted Slot:" + iteration_count +" iteration start time:"+ clock()); 
 		
 		for (int i = 0; i < entities_size; i++ ) {
 			ent = entities.get(i);
@@ -80,8 +81,8 @@ public class FogSim extends CloudSim {
 			break;
 		case 1:
 			update_futureQueByShaduling();
-			queue_empty = executeAllTasks();
-//			queue_empty = executeHighPriorityTasks();
+//			queue_empty = executeAllTasks();
+			queue_empty = executeHighPriorityTasks();
 			break;			
 		case 2:
 			update_futureQueByShaduling();
@@ -121,22 +122,20 @@ public class FogSim extends CloudSim {
 				SimEvent next = fit.next();
 				entsorce = entities.get( next.getSource());			
 				entdest = entities.get( next.getDestination());	
-				
-//have concern on this if statement why we should compare time?
-				if (next.eventTime() == first.eventTime()) {					
+				if (next.eventTime() == first.eventTime()) {
 					if (entsorce.getName().startsWith("m-V")) {
 						processEvent(next);
 						toRemove.add(next);
+						trymore = fit.hasNext();
 					} else if (entdest.getName().startsWith("m-V")) {
 							processEvent(next);
 							toRemove.add(next);
+							trymore = fit.hasNext();
 					}					
-					trymore = fit.hasNext();
-				
-				
 				} else {
 					trymore = false;
 				}
+				
 			}
 			future.removeAll(toRemove);			
 			toRemove.clear();
@@ -188,7 +187,6 @@ public class FogSim extends CloudSim {
 				SimEvent next = fit.next();
 				//manju have some concern on this if statement 
 				if (next.eventTime() == first.eventTime()) {
-//					System.out.println( "executeAllTasks:"+future.size()); 
 					processEvent(next);
 					toRemove.add(next);
 					trymore = fit.hasNext();
@@ -236,19 +234,7 @@ public class FogSim extends CloudSim {
 				} else {
 					int tag = e.getTag();
 					dest_ent = entities.get(dest);
-					if (dest_ent.getState() == SimEntity.WAITING) {
-						Integer destObj = Integer.valueOf(dest);
-						Predicate p = waitPredicates.get(destObj);
-						if ((p == null) || (tag == 9999) || (p.match(e))) {
-							dest_ent.setEventBuffer((SimEvent) e.clone());
-							dest_ent.setState(SimEntity.RUNNABLE);
-							waitPredicates.remove(destObj);
-						} else {
-							deferred.addEvent(e);
-						}
-					} else {
-						deferred.addEvent(e);
-					}
+					deferred.addEvent(e);
 				}
 				break;
 
