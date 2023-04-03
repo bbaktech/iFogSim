@@ -4,3 +4,4 @@ bin/
 .settings/
 .project
 
+src/org/fog/entities/FogDevice.java
