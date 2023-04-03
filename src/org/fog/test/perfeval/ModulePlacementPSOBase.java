@@ -50,7 +50,7 @@ class Particle {
 
 	void RandumInitialize() {		
 		for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++)
-		     for ( int j = 0 ;j< ModulePlacementPSOBase.MAX_NO_MODLS;  j++) {
+		     for ( int j = 0 ;j< no_modules.size();  j++) {
 		    	 indextble[i][j] =0;
 		    	 pBestindextble[i][j]=0;
 		     }
@@ -209,7 +209,7 @@ class Particle {
 	void printMap() {
 		for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
 		     System.out.print("Level("+i+"): ");
-		     for ( int j = 0 ;j< ModulePlacementPSOBase.MAX_NO_MODLS;  j++) {
+		     for ( int j = 0 ;j< no_modules.size();  j++) {
 		    	 System.out.print(indextble[i][j]+" ");
 		     }
 		     System.out.println();
@@ -219,7 +219,7 @@ class Particle {
 	void printpBestMap() {
 		for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
 		     System.out.print("Level("+i+"): ");
-		     for ( int j = 0 ;j< ModulePlacementPSOBase.MAX_NO_MODLS;  j++) {
+		     for ( int j = 0 ;j< no_modules.size();  j++) {
 		    	 System.out.print(pBestindextble[i][j]+" ");
 		     }
 		     System.out.println();
@@ -231,7 +231,7 @@ class Particle {
 		
 		if (toParticle != null) {
 			for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
-			     for ( int j = 0 ;j< ModulePlacementPSOBase.MAX_NO_MODLS;  j++) {
+			     for ( int j = 0 ;j< no_modules.size();  j++) {
 			    	if  (dist == 0) break;    	
 			    	if ( indextble[i][j] != toParticle.indextble[i][j]) {
 			    		int temp =indextble[i][j];
@@ -253,7 +253,7 @@ class Particle {
 			}
 		} else {
 			for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
-			     for ( int j = 0 ;j< ModulePlacementPSOBase.MAX_NO_MODLS;  j++) {
+			     for ( int j = 0 ;j< no_modules.size();  j++) {
 			    	if  (dist == 0) break;    	
 			    	if ( indextble[i][j] != pBestindextble[i][j]) {
 			    		int temp =indextble[i][j];
@@ -278,7 +278,7 @@ class Particle {
 		//new position is better than old pBest then set new position as pBest
 		if (pBestfitness > ComputeFitness()) {
 			for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
-			     for ( int j = 0 ;j< ModulePlacementPSOBase.MAX_NO_MODLS;  j++) {
+			     for ( int j = 0 ;j< no_modules.size();  j++) {
 			    	 pBestindextble[i][j]=indextble[i][j];
 			     }
 			}			
