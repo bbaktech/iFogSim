@@ -255,7 +255,7 @@ public class HMS {
 		application.addAppEdge("DATA_FILTER", "DATA_PROCESSING", 2000, 500, "FILTERED_DATA", Tuple.UP, AppEdge.MODULE); 
 		application.addAppEdge("DATA_PROCESSING", "EVENT_HANDLER", 4000, 500, "PROCESSED_DATA", Tuple.UP, AppEdge.MODULE);
 		application.addAppEdge("EVENT_HANDLER", "CLIENT", 100, 500, "RESPONSE", Tuple.DOWN, AppEdge.MODULE); 
-		application.addAppEdge("CLIENT", "DISPLAY", 0, 500, "PTZ_PARM", Tuple.DOWN, AppEdge.ACTUATOR); 
+		application.addAppEdge("CLIENT", "DISPLAY", 0, 500, "PTZ_PARM", Tuple.ACTUATOR, AppEdge.ACTUATOR); 
 		
 		/*
 		 * Defining the input-output relationships (represented by selectivity) of the application modules. 

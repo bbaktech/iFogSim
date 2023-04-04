@@ -63,8 +63,8 @@ public class FogSim extends CloudSim {
 		
 		int entities_size = entities.size();
 		
-		if (iteration_count< 50) 
-			System.out.println( "=================Sarted Slot:" + iteration_count +" iteration start time:"+ clock()); 
+//		if (iteration_count< 50) 
+//			System.out.println( "=================Sarted Slot:" + iteration_count +" iteration start time:"+ clock()); 
 		
 		for (int i = 0; i < entities_size; i++ ) {
 			ent = entities.get(i);
