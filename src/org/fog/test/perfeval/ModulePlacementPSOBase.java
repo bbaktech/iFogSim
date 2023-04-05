@@ -24,6 +24,7 @@ class Particle {
 	List<FogDevice>  no_devises;
 	List<AppModule> no_modules;
 	List <AppEdge> listedges; 
+	int MaxDeviceLeve;
 	
 	double fitness ;
 	double pBestfitness ;
@@ -32,12 +33,18 @@ class Particle {
 	int[][] pBestindextble = new int[8][8];
 	
 	Particle(List<FogDevice> fds, List<AppModule> mdls, AppLoop apploop, List <AppEdge> listedges) {
-		 this.no_devises =fds ;  
-		 this.no_modules =mdls; 
-		 this.apploop = apploop;
-		 this.listedges = listedges;
-		 this.fitness =0 ;
-		 this.pBestfitness=0 ;	 
+		this.no_devises =fds ;  
+		this.no_modules =mdls; 
+		this.apploop = apploop;
+		this.listedges = listedges;
+		this.fitness =0 ;
+		this.pBestfitness=0 ;
+		this.MaxDeviceLeve = 0;
+		for(FogDevice device : no_devises){
+			if (device.getLevel() > this.MaxDeviceLeve) {
+				this.MaxDeviceLeve = device.getLevel();
+			}
+		}
 	}
 
 	int Get(int i,int j) {
@@ -49,7 +56,7 @@ class Particle {
 	}
 
 	void RandumInitialize() {		
-		for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++)
+		for ( int i = 0 ;i< MaxDeviceLeve+1; i++)
 		     for ( int j = 0 ;j< no_modules.size();  j++) {
 		    	 indextble[i][j] =0;
 		    	 pBestindextble[i][j]=0;
@@ -57,7 +64,7 @@ class Particle {
 		Random rand = new Random();
 		
 		for (int i = 0; i< no_modules.size(); i++) {
-	        int r = rand.nextInt(ModulePlacementPSOBase.MAX_NO_R_LEVELS);		
+	        int r = rand.nextInt(MaxDeviceLeve+1);		
 	        indextble[r][i]++;
 	        pBestindextble[r][i]++;
 		}
@@ -67,14 +74,16 @@ class Particle {
 	double ComputeFitness() {
 		
 		double loopdelay = 0.0;
-		List <String> loop_modules = apploop.getModules();			
+		List <String> loop_modules = apploop.getModules();	
+		System.out.println(loop_modules);
+		
 		for (int i =0; i < loop_modules.size()-1; i++) {
 
 			for(AppEdge appedge : listedges){
 				if (appedge.getSource().equalsIgnoreCase(loop_modules.get(i)) && appedge.getDestination().equalsIgnoreCase(loop_modules.get(i+1))) {
 					double tplCpuLenth = appedge.getTupleCpuLength();
 					double tplNwLenth= appedge.getTupleNwLength();
-//					System.out.println(appedge.getDestination() + " CPU ln:" +tplCpuLenth + " NW L"+ tplNwLenth);	
+//					System.out.println("Source:"+appedge.getSource()+ " Distination:"+appedge.getDestination() + " CPU ln:" +tplCpuLenth + " NW L"+ tplNwLenth);	
 					
 					double latncy = 0;
 					double cpuMips =0;
@@ -86,17 +95,17 @@ class Particle {
 //						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth);	
 
 					} else if (appedge.getEdgeType() == AppEdge.SENSOR) {
-						latncy = 6;						
+						latncy = 6;		//assuming SENSOR is at mobile devise(MAX_LEVE -1)				
 						latncy = latncy + GetLatencySourcToDest(null,loop_modules.get(i+1));
 						cpuMips = GetModuleMapedResoureMIPS(appedge.getDestination());	
 						loopdelay = loopdelay + latncy*tplNwLenth + tplCpuLenth /cpuMips*1000 ;					
-//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" CPU-L"+ tplCpuLenth + " Speed:"+cpuMips );	
+//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" NoOfInstructions:"+ tplCpuLenth + " Speed(MilionIPS):"+cpuMips );	
 
 					} else {
 						cpuMips = GetModuleMapedResoureMIPS(appedge.getDestination());	
 						latncy = GetLatencySourcToDest(loop_modules.get(i),loop_modules.get(i+1));
 						loopdelay = loopdelay + latncy*tplNwLenth + tplCpuLenth /cpuMips*1000  ;
-//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" CPU-L"+ tplCpuLenth + " Speed:"+cpuMips );	
+//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" NoOfInstructions:"+ tplCpuLenth + " Speed(MilionIPS):"+cpuMips );	
 						//latency in milliseconds, network_length in Bytes, CPU_length in bytes	,	CPU(speed) in Million Instruction Per Second
 					}
 					break;
@@ -112,13 +121,14 @@ class Particle {
 		FogDevice fd = null;		
 //		List<AppModule> no_modules;
 		int k = 0;
+//		System.out.println(m);
 		for (k = 0; k< no_modules.size(); k++) {
 			if ( no_modules.get(k).getName().equalsIgnoreCase(m))
 				break;  
 		}
 		
 		int level = 0;
-		for ( level = 0 ; level< ModulePlacementPSOBase.MAX_NO_R_LEVELS; level++) {
+		for ( level = 0 ; level< MaxDeviceLeve+1; level++) {
 		    	 if (indextble[level][k] == 1) 
 		    		 break;
 		}		
@@ -138,21 +148,20 @@ class Particle {
 		
 		FogDevice srcDev = null, destDev = null;
 		
-		for(FogDevice device : no_devises){
-			if (device.getLevel() == ModulePlacementPSOBase.MAX_NO_R_LEVELS - 1) {
-				srcDev = device;
-				destDev = device;
-				break;
-			}
-		}
-
 		double latency = 0.0;
+		int srcL =0,destL=0;
+		//if source is null meens it is SENSER so we set srcL to MAXLEVEL
+		if (source != null) {
+			srcDev = GetModuleMapedResoure(source);	
+			srcL= srcDev.getLevel();
+		} else srcL = MaxDeviceLeve;
 		
-		if (source != null) srcDev = GetModuleMapedResoure(source);		
-		if (dest != null) destDev = GetModuleMapedResoure(dest);
+		//if dest is null meens it is ACTUATER so we set destL to MAXLEVEL
+		if (dest != null) {
+			destDev = GetModuleMapedResoure(dest);
+			destL=destDev.getLevel();
+		} else destL = MaxDeviceLeve;
 		
-		int srcL= srcDev.getLevel();
-		int destL=destDev.getLevel();
 		
 		while (srcL != destL ) {
 			
@@ -177,7 +186,7 @@ class Particle {
 					srcL-- ;
 				}
 		}
-			
+
 		return latency;
 	}
 	
@@ -192,7 +201,7 @@ class Particle {
 				break;  
 		}
 		int level = 0;
-		for ( level = 0 ; level< ModulePlacementPSOBase.MAX_NO_R_LEVELS; level++) {
+		for ( level = 0 ; level<  MaxDeviceLeve+1; level++) {
 		    	 if (indextble[level][k] == 1) 
 		    		 break;
 		}
@@ -207,7 +216,7 @@ class Particle {
 	}
 	
 	void printMap() {
-		for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
+		for ( int i = 0 ;i< MaxDeviceLeve+1;i++) {
 		     System.out.print("Level("+i+"): ");
 		     for ( int j = 0 ;j< no_modules.size();  j++) {
 		    	 System.out.print(indextble[i][j]+" ");
@@ -217,10 +226,17 @@ class Particle {
 	}
 
 	void printpBestMap() {
-		for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
-		     System.out.print("Level("+i+"): ");
+		for ( int i = 0 ;i<  MaxDeviceLeve+1;i++) {
+			 if (i==0)
+			 { System.out.print("       ");
+				 for ( int j = 0 ;j< no_modules.size();  j++) {
+					 System.out.print(no_modules.get(j).getName()+ "  ") ;
+				 }
+				 System.out.println();
+			 }
+		     System.out.print("Level("+i+"):  ");
 		     for ( int j = 0 ;j< no_modules.size();  j++) {
-		    	 System.out.print(pBestindextble[i][j]+" ");
+		    	 System.out.print(pBestindextble[i][j]+"        ");
 		     }
 		     System.out.println();
 		}
@@ -230,19 +246,19 @@ class Particle {
 	void MoveParticle(int dist , Particle toParticle ) {
 		
 		if (toParticle != null) {
-			for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
+			for ( int i = 0 ;i<  MaxDeviceLeve+1;i++) {
 			     for ( int j = 0 ;j< no_modules.size();  j++) {
 			    	if  (dist == 0) break;    	
 			    	if ( indextble[i][j] != toParticle.indextble[i][j]) {
 			    		int temp =indextble[i][j];
 			    		 //moved towords toParticle
 			    		if (temp == 0) {
-			    			for ( int k = 0 ; k<ModulePlacementPSOBase.MAX_NO_R_LEVELS; k++) {
+			    			for ( int k = 0 ; k< MaxDeviceLeve+1; k++) {
 			    				indextble[k][j] = temp;
 			    			}
 			    		indextble[i][j] = toParticle.indextble[i][j];
 			    		} else {   indextble[i][j] = toParticle.indextble[i][j];
-				    		if (i+1 < ModulePlacementPSOBase.MAX_NO_R_LEVELS)
+				    		if (i+1 <  MaxDeviceLeve+1)
 				    			indextble[i+1][j] = temp;
 				    		else indextble[0][j] = temp;	
 
@@ -252,19 +268,19 @@ class Particle {
 			     }
 			}
 		} else {
-			for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
+			for ( int i = 0 ;i<  MaxDeviceLeve+1;i++) {
 			     for ( int j = 0 ;j< no_modules.size();  j++) {
 			    	if  (dist == 0) break;    	
 			    	if ( indextble[i][j] != pBestindextble[i][j]) {
 			    		int temp =indextble[i][j];
 			    		 //moved towords toParticle
 			    		if (temp == 0) {
-			    			for ( int k = 0 ; k<ModulePlacementPSOBase.MAX_NO_R_LEVELS; k++) {
+			    			for ( int k = 0 ; k< MaxDeviceLeve+1; k++) {
 			    				indextble[k][j] = temp;
 			    			}
 			    		indextble[i][j] = pBestindextble[i][j];
 			    		} else {   indextble[i][j] = pBestindextble[i][j];
-				    		if (i+1 < ModulePlacementPSOBase.MAX_NO_R_LEVELS)
+				    		if (i+1 < MaxDeviceLeve+1)
 				    			indextble[i+1][j] = temp;
 				    		else indextble[0][j] = temp;	
 
@@ -277,7 +293,7 @@ class Particle {
 		
 		//new position is better than old pBest then set new position as pBest
 		if (pBestfitness > ComputeFitness()) {
-			for ( int i = 0 ;i< ModulePlacementPSOBase.MAX_NO_R_LEVELS;i++) {
+			for ( int i = 0 ;i<  MaxDeviceLeve+1;i++) {
 			     for ( int j = 0 ;j< no_modules.size();  j++) {
 			    	 pBestindextble[i][j]=indextble[i][j];
 			     }
@@ -340,16 +356,12 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 		
 		List <Particle> particles = new LinkedList<Particle>(); 
 		
-//		List <Particle> pBestParicles = new LinkedList<Particle>(); 		
-//		double gBestParticle = null;
-
 		for (int i = 0 ; i <NO_PARTICLES; i++) {
 			Particle p = new Particle(getFogDevices(),apMdls, apploop, appedges);
 			p.RandumInitialize();
 			particles.add(p);
 		}		
 
-		
 //PSO Algorithm	loop	
 		Particle gBest_particel = particles.get(0);
 		double gBest = gBest_particel.pBestfitness;
@@ -392,9 +404,17 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 	
 		Particle selected_particel = gBest_particel;	
 		
-		System.out.println("gWaightparticle:"+selected_particel.pBestfitness);		
-		selected_particel.printpBestMap();		
-		for (int i = 0 ;i < ModulePlacementPSOBase.MAX_NO_R_LEVELS; i++) {
+		System.out.println("Fitness Value:"+selected_particel.pBestfitness);		
+		selected_particel.printpBestMap();
+
+		int mdL = 0;
+		for(FogDevice device : getFogDevices()){
+			if (device.getLevel() > mdL) {
+				mdL = device.getLevel();
+			}
+		}
+		
+		for (int i = 0 ;i < mdL+1; i++) {
 			for(FogDevice device : fogDevices){
 				if ( device.getLevel()==i) {
 					for (int j = 0 ; j < apMdls.size(); j++) {
