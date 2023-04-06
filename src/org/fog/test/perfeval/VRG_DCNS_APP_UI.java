@@ -189,11 +189,18 @@ public class VRG_DCNS_APP_UI {
 			//this class has last part to display summary - simulation results.
 			Controller controller = new Controller("master-controller", fogDevices, sensors, 
 					actuators);
-
-			System.out.println("==App0==");
-			controller.submitApplication(application0, new ModulePlacementMappingAp0(fogDevices,sensors, actuators,application0, moduleMapping_0));
-			System.out.println("==App1==");		
-			controller.submitApplication(application1, new ModulePlacementMappingAp1(fogDevices,sensors, actuators,application1, moduleMapping_1));
+			if (FogSim.SheduleMethod != 2) {  
+				System.out.println("==App0==");
+				controller.submitApplication(application0, new ModulePlacementMappingAp0(fogDevices,sensors, actuators,application0, moduleMapping_0));
+				System.out.println("==App1==");		
+				controller.submitApplication(application1, new ModulePlacementMappingAp1(fogDevices,sensors, actuators,application1, moduleMapping_1));
+			} else {
+				System.out.println("==App0==");
+				controller.submitApplication(application0, new ModulePlacementPSOBase(fogDevices,sensors, actuators,application0, moduleMapping_0));
+				System.out.println("==App1==");		
+				controller.submitApplication(application1, new ModulePlacementMappingAp1(fogDevices,sensors, actuators,application1, moduleMapping_1));
+				
+			}
 			
 			TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 

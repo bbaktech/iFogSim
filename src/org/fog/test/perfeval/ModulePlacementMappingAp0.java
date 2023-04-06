@@ -72,8 +72,8 @@ public class ModulePlacementMappingAp0 extends ModulePlacement{
 			break;
 		case 2:
 			moduleMapping.addModuleToDevice("coordinator", "cloud"); // fixing all instances of the coordinator module to the Cloud
-			moduleMapping.addModuleToDevice("client", "cloud");  // fixing all instances of the Client module to the Smartphones
-			moduleMapping.addModuleToDevice("concentration_calculator", "cloud"); // fixing all instances of the Concentration Calculator module to the FogDevices
+			moduleMapping.addModuleToDevice("client", "cloud");  // fixing all instances of the Client module to the Cloud
+			moduleMapping.addModuleToDevice("concentration_calculator", "cloud"); // fixing all instances of the Concentration Calculator module the Cloud
 			break;
 		
 		}

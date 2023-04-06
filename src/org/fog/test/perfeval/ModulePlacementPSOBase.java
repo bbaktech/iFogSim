@@ -14,6 +14,7 @@ import org.fog.application.Application;
 import org.fog.entities.Actuator;
 import org.fog.entities.FogDevice;
 import org.fog.entities.Sensor;
+import org.fog.entities.Tuple;
 import org.fog.placement.ModuleMapping;
 import org.fog.placement.ModulePlacement;
 import org.fog.utils.TimeKeeper;
@@ -93,6 +94,7 @@ class Particle {
 						latncy = latncy + GetLatencySourcToDest(loop_modules.get(i),null);
 						loopdelay = loopdelay + latncy*tplNwLenth  ;
 //						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth);	
+//						System.out.println(loopdelay);
 
 					} else if (appedge.getEdgeType() == AppEdge.SENSOR) {
 						latncy = 6;		//assuming SENSOR is at mobile devise(MAX_LEVE -1)				
@@ -100,19 +102,21 @@ class Particle {
 						cpuMips = GetModuleMapedResoureMIPS(appedge.getDestination());	
 						loopdelay = loopdelay + latncy*tplNwLenth + tplCpuLenth /cpuMips*1000 ;					
 //						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" NoOfInstructions:"+ tplCpuLenth + " Speed(MilionIPS):"+cpuMips );	
+//						System.out.println(loopdelay);
 
 					} else {
 						cpuMips = GetModuleMapedResoureMIPS(appedge.getDestination());	
 						latncy = GetLatencySourcToDest(loop_modules.get(i),loop_modules.get(i+1));
 						loopdelay = loopdelay + latncy*tplNwLenth + tplCpuLenth /cpuMips*1000  ;
 //						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" NoOfInstructions:"+ tplCpuLenth + " Speed(MilionIPS):"+cpuMips );	
+//						System.out.println(loopdelay);
 						//latency in milliseconds, network_length in Bytes, CPU_length in bytes	,	CPU(speed) in Million Instruction Per Second
 					}
 					break;
 				}
 			}
 		}
-//		System.out.println("Total loopdelay(seconds)"+loopdelay/1000);
+		System.out.println("Total loopdelay(seconds)"+loopdelay/1000);
 		fitness = loopdelay/1000;
     	return fitness;	
 	}
@@ -309,7 +313,11 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 	public static int MAX_NO_MODLS = 4;
 	public static int MAX_NO_R_LEVELS = 4;
 	public static int NO_PARTICLES = 4;
-	public static int NO_ITERATIONS = 10;
+	public static int NO_ITERATIONS = 3;
+	List <AppModule> apMdls;
+	List <AppEdge> appedges; 
+	List <AppLoop> apploops;
+	Particle selected_particel;
 	
 	@Override
 
@@ -338,6 +346,8 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 		this.setDeviceToModuleMap(new HashMap<Integer, List<AppModule>>());
 		this.setModuleInstanceCountMap(new HashMap<Integer, Map<String, Integer>>());
 		
+
+		
 		for(FogDevice device : getFogDevices())
 			getModuleInstanceCountMap().put(device.getId(), new HashMap<String, Integer>());
 		
@@ -349,9 +359,10 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 	private void PSOResourceSheduleing() {
 		// TODO Auto-generated method stub
 
-		List <AppModule> apMdls = getApplication().getModules();
-		List <AppEdge> appedges = getApplication().getEdges();
-		List <AppLoop> apploops = getApplication().getLoops();
+		this.apMdls = getApplication().getModules();
+		this.appedges = getApplication().getEdges();
+		this.apploops = getApplication().getLoops();
+		
 		AppLoop apploop = apploops.get(0);
 		
 		List <Particle> particles = new LinkedList<Particle>(); 
@@ -402,7 +413,7 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 				}	
 		}
 	
-		Particle selected_particel = gBest_particel;	
+		selected_particel = gBest_particel;	
 		
 		System.out.println("Fitness Value:"+selected_particel.pBestfitness);		
 		selected_particel.printpBestMap();
@@ -413,22 +424,56 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 				mdL = device.getLevel();
 			}
 		}
+//mdL will have no module in the system
 		
 		for (int i = 0 ;i < mdL+1; i++) {
 			for(FogDevice device : fogDevices){
 				if ( device.getLevel()==i) {
 					for (int j = 0 ; j < apMdls.size(); j++) {
-						if (1==selected_particel.pBestGet(i, j)) 
-							moduleMapping.addModuleToDevice(apMdls.get(j).getName(), device.getName());
+						if (1==selected_particel.pBestGet(i, j)) {
+								moduleMapping.addModuleToDevice(apMdls.get(j).getName(), device.getName());
+								
+						}
 					}
 				}
 			}
 		}
+		UpdateAppEdgesAccordingtoModuleMaping();
 	}
-
+	
+	void UpdateAppEdgesAccordingtoModuleMaping() {
+		for(AppEdge appedge : appedges) {			
+			if ( AppEdge.MODULE == appedge.getEdgeType()) {
+				int mdlSorceId = 0;
+				int mdlDestId = 0;
+				int srcL = 0;
+				int destL=0;
+				int direction =  Tuple.UP;
+				for (int j = 0 ; j < apMdls.size(); j++) {
+					if (apMdls.get(j).getName().equalsIgnoreCase(appedge.getSource())) mdlSorceId = j;
+					if (apMdls.get(j).getName().equalsIgnoreCase(appedge.getDestination()))mdlDestId = j ;
+				}
+// find the level of source model and level of dest model, based on that initialise direction
+				
+				for (int j = 0 ; j < apMdls.size(); j++) {
+					if (1==selected_particel.pBestGet(j, mdlSorceId)) srcL = j;
+					if (1==selected_particel.pBestGet(j, mdlDestId)) destL=j;
+				}				
+				
+				if (srcL < destL) direction = Tuple.DOWN;
+				else direction = Tuple.UP;
+				
+				appedge.setDirection(direction);				
+				
+//				System.out.println("Direction:" +appedge.getDirection());				
+			}
+		}
+	}
+	
 	public ModuleMapping getModuleMapping() {
 		return moduleMapping;
 	}
+	
 	public void setModuleMapping(ModuleMapping moduleMapping) {
 		this.moduleMapping = moduleMapping;
 	}
