@@ -39,7 +39,7 @@ import org.fog.utils.FogUtils;
 import org.fog.utils.TimeKeeper;
 import org.fog.utils.distribution.DeterministicDistribution;
 
-public class VRG_DCNS_APP_UI {
+public class VRG_DCNS_UI {
 
 	static List<FogDevice> fogDevices = new ArrayList<FogDevice>();
 	static List<FogDevice> mobiles = new ArrayList<FogDevice>();
@@ -49,6 +49,7 @@ public class VRG_DCNS_APP_UI {
 	static int numFogResources = 3; //it should be always > than or =  to 1
 	static int numOfEdgeDvises = 6;
 	static double EEG_TRANSMISSION_TIME = 5;
+	static int SheduleMethod;
 	
     public static void main(String[] args) {
       JFrame frame = new JFrame("VRG_DCNS_APP_UI");
@@ -107,10 +108,10 @@ public class VRG_DCNS_APP_UI {
     		        numFogResources = Integer.valueOf(fd.getText());
     		        numOfEdgeDvises = Integer.valueOf(ed.getText());
     		        String s = (String) cAlg.getSelectedItem();
-    		        if (s.equals("FCFS"))  FogSim.SheduleMethod = 0;
-    		        else if (s.equals("Priority")) FogSim.SheduleMethod = 1;
-    		        else if (s.equals("WOS")) FogSim.SheduleMethod = 2;    		        
-    		        System.out.println("FR:"+numFogResources+" ER:"+numOfEdgeDvises + " Algorithem:"+FogSim.SheduleMethod);
+    		        if (s.equals("FCFS"))  SheduleMethod = 0;
+    		        else if (s.equals("Priority")) SheduleMethod = 1;
+    		        else if (s.equals("WOS")) SheduleMethod = 2;    		        
+    		        System.out.println("FR:"+numFogResources+" ER:"+numOfEdgeDvises + " Algorithem:"+SheduleMethod);
     		        RunSimulation();
     		    }   	  
       });
@@ -133,7 +134,7 @@ public class VRG_DCNS_APP_UI {
 			Calendar calendar = Calendar.getInstance();
 			boolean trace_flag = false; // mean trace events
 
-			FogSim.init(num_user, calendar, trace_flag);
+			CloudSim.init(num_user, calendar, trace_flag);
 
 			String appId0 = "VRGAME";
 			String appId1 = "DCNS";
@@ -173,7 +174,7 @@ public class VRG_DCNS_APP_UI {
 			//this class has last part to display summary - simulation results.
 			Controller controller = new Controller("master-controller", fogDevices, sensors, 
 					actuators);
-			if (FogSim.SheduleMethod != 2) {  
+			if (SheduleMethod != 2) {  
 				System.out.println("==App0==");				
 				controller.submitApplication(application0, new ModulePlacementMappingAp0(fogDevices,sensors, actuators,application0, moduleMapping_0));
 				System.out.println("==App1==");		
@@ -188,9 +189,9 @@ public class VRG_DCNS_APP_UI {
 			
 			TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 
-			FogSim.startSimulation();
+			CloudSim.startSimulation();
 
-			FogSim.stopSimulation();
+			CloudSim.stopSimulation();
 
 			Log.printLine("simulation finished!");
 		} catch (Exception e) {
@@ -240,37 +241,26 @@ public class VRG_DCNS_APP_UI {
 	private static void createIoTNetworktopology() {
 		FogDevice cloud = createFogDevice("cloud", 44800, 40000, 100, 10000, 0, 0.01, 16*103, 16*83.25); // creates the fog device Cloud at the apex of the hierarchy with level=0
 		cloud.setParentId(-1);
-		FogDevice gateway = createFogDevice("d-R:"+0, 2800, 4000, 10000, 10000, 1, 0.0, 107.339, 83.4333); // creates the fog device Proxy Server (level=1)
-		gateway.setParentId(cloud.getId()); // setting Cloud as parent of the Proxy Server
-		gateway.setUplinkLatency(100); // latency of connection from Proxy Server to the Cloud is 100 ms
+		FogDevice proxy = createFogDevice("proxy"+0, 2800, 4000, 10000, 10000, 1, 0.0, 107.339, 83.4333); // creates the fog device Proxy Server (level=1)
+		proxy.setParentId(cloud.getId()); // setting Cloud as parent of the Proxy Server
+		proxy.setUplinkLatency(100); // latency of connection from Proxy Server to the Cloud is 100 ms
 		
 		fogDevices.add(cloud);
-		fogDevices.add(gateway);
+		fogDevices.add(proxy);
+		
+		for(int i=0;i<numFogResources;i++){
+			addFogResourcess("R:"+i, proxy.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
 
-		for(int i=0;i<numOfEdgeDvises;i++){
-			addEdgeResourcess("VRLG:"+i, gateway.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
-		}	
-		
-		for(int i=0;i<numOfEdgeDvises;i++){
-			addEdgeResourcess("DCNS:"+i, gateway.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
-		}	
-		
-		for(int i=1;i<numFogResources;i++){
-			addFogResourcess("R:"+i, gateway.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
-//			addFogResourcess("R:"+i, cloud.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
 		}	
 	}
 
 	private static FogDevice addFogResourcess(String id, int parentId){
-		FogDevice fogdevice = createFogResources("d-"+id, 2800, 4000, 10000, 10000, 2, 0.0, 107.339, 83.4333);
+		FogDevice fogdevice = createFogDevice("d-"+id, 2800, 4000, 10000, 10000, 2, 0.0, 107.339, 83.4333);
 		fogDevices.add(fogdevice);
 		fogdevice.setParentId(parentId);
-		fogdevice.setUplinkLatency(0); // latency of connection between gateways and FogResource server is 0 ms
-		List <Integer> childrens = new ArrayList<Integer>();
-		for(FogDevice device : mobiles) {
-			childrens.add(device.getId());
-		}
-		fogdevice.setChildrenIds(childrens);
+		fogdevice.setUplinkLatency(2); // latency of connection between gateways and FogResource server is 0 ms
+		addEdgeResourcess("DCNS:"+id, fogdevice.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
+		addEdgeResourcess("VRLG:"+id, fogdevice.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
 		return fogdevice;
 	}	
 
@@ -284,73 +274,6 @@ public class VRG_DCNS_APP_UI {
 		return mobile;
 	}
 	
-	/**
-	 * Creates a vanilla fog device
-	 * @param nodeName name of the device to be used in simulation
-	 * @param mips MIPS
-	 * @param ram RAM
-	 * @param upBw uplink bandwidth
-	 * @param downBw downlink bandwidth
-	 * @param level hierarchy level of the device
-	 * @param ratePerMips cost rate per MIPS used
-	 * @param busyPower
-	 * @param idlePower
-	 * @return
-	 */
-	
-	private static FogResource createFogResources(String nodeName, long mips,
-			int ram, long upBw, long downBw, int level, double ratePerMips, double busyPower, double idlePower) {
-		
-		List<Pe> peList = new ArrayList<Pe>();
-
-		// 3. Create PEs and add these into a list.
-		peList.add(new Pe(0, new PeProvisionerOverbooking(mips))); // need to store Pe id and MIPS Rating
-
-		int hostId = FogUtils.generateEntityId();
-		long storage = 1000000; // host storage
-		int bw = 10000;
-
-		PowerHost host = new PowerHost(
-				hostId,
-				new RamProvisionerSimple(ram),
-				new BwProvisionerOverbooking(bw),
-				storage,
-				peList,
-				new StreamOperatorScheduler(peList),
-				new FogLinearPowerModel(busyPower, idlePower)
-			);
-
-		List<Host> hostList = new ArrayList<Host>();
-		hostList.add(host);
-
-		String arch = "x86"; // system architecture
-		String os = "Linux"; // operating system
-		String vmm = "Xen";
-		double time_zone = 10.0; // time zone this resource located
-		double cost = 3.0; // the cost of using processing in this resource
-		double costPerMem = 0.05; // the cost of using memory in this resource
-		double costPerStorage = 0.001; // the cost of using storage in this
-										// resource
-		double costPerBw = 0.0; // the cost of using bw in this resource
-		LinkedList<Storage> storageList = new LinkedList<Storage>(); // we are not adding SAN
-													// devices by now
-
-		FogDeviceCharacteristics characteristics = new FogDeviceCharacteristics(
-				arch, os, vmm, host, time_zone, cost, costPerMem,
-				costPerStorage, costPerBw);
-
-		FogResource fogdevice = null;
-		try {
-			fogdevice = new FogResource(nodeName, characteristics, 
-					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		fogdevice.setLevel(level);
-		return fogdevice;
-	}
-
 	private static FogDevice createFogDevice(String nodeName, long mips,
 			int ram, long upBw, long downBw, int level, double ratePerMips, double busyPower, double idlePower) {
 		

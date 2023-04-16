@@ -46,7 +46,7 @@ public class ModulePlacementMappingAp1 extends ModulePlacement{
 		for(FogDevice device : getFogDevices())
 			getModuleInstanceCountMap().put(device.getId(), new HashMap<String, Integer>());
 		
-		switch ( FogSim.SheduleMethod) {
+		switch ( VRG_DCNS_UI.SheduleMethod) {
 		case 0:
 			moduleMapping.addModuleToDevice("user_interface", "cloud"); // fixing all instances of the user_interface module to the Cloud
 			for(FogDevice device : fogDevices){
