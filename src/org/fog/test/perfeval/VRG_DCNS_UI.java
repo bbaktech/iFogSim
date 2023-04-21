@@ -47,12 +47,11 @@ public class VRG_DCNS_UI {
 	static List<Actuator> actuators = new ArrayList<Actuator>();
 	
 	static int numFogResources = 3; //it should be always > than or =  to 1
-	static int numOfEdgeDvises = 6;
 	static double EEG_TRANSMISSION_TIME = 5;
 	static int SheduleMethod;
 	
     public static void main(String[] args) {
-      JFrame frame = new JFrame("VRG_DCNS_APP_UI");
+      JFrame frame = new JFrame("VRG_DCNS_UI");
       
       Container cp = frame.getContentPane();
       cp.setLayout(new FlowLayout());
@@ -75,12 +74,6 @@ public class VRG_DCNS_UI {
       jl.setBounds(30, 50, 120, 80);
       cp.add(jl);
       
-      JTextField ed = new JTextField("6", 5);
-      ed.setEditable(true);
-      ed.setHorizontalAlignment(JTextField.RIGHT);
-      ed.setBounds(30, 100, 120, 80);
-      cp.add(ed);
-            
       // Create JComboBox for setting the count step size
       cp.add(new JLabel("Algorithem:"));
       final String[] steps = {"FCFS","Priority","WOS"};  // auto-upcast
@@ -106,12 +99,12 @@ public class VRG_DCNS_UI {
     		       		    
     		        System.out.println("Button pressed!");
     		        numFogResources = Integer.valueOf(fd.getText());
-    		        numOfEdgeDvises = Integer.valueOf(ed.getText());
+//    		        numOfEdgeDvises = Integer.valueOf(ed.getText());
     		        String s = (String) cAlg.getSelectedItem();
     		        if (s.equals("FCFS"))  SheduleMethod = 0;
     		        else if (s.equals("Priority")) SheduleMethod = 1;
     		        else if (s.equals("WOS")) SheduleMethod = 2;    		        
-    		        System.out.println("FR:"+numFogResources+" ER:"+numOfEdgeDvises + " Algorithem:"+SheduleMethod);
+//    		        System.out.println("FR:"+numFogResources+" ER:"+numOfEdgeDvises + " Algorithem:"+SheduleMethod);
     		        RunSimulation();
     		    }   	  
       });
@@ -181,7 +174,6 @@ public class VRG_DCNS_UI {
 				controller.submitApplication(application1, new ModulePlacementMappingAp1(fogDevices,sensors, actuators,application1, moduleMapping_1));
 			} else {
 				System.out.println("==App0==");				
-//				controller.submitApplication(application0, new ModulePlacementPSOBase(fogDevices,sensors, actuators,application0, moduleMapping_0));				
 				controller.submitApplication(application0, new WOBasedModulePlacementMapping(fogDevices,sensors, actuators,application0, moduleMapping_0));
 				System.out.println("==App1==");		
 				controller.submitApplication(application1, new ModulePlacementMappingAp1(fogDevices,sensors, actuators,application1, moduleMapping_1));				
@@ -258,7 +250,7 @@ public class VRG_DCNS_UI {
 		FogDevice fogdevice = createFogDevice("d-"+id, 2800, 4000, 10000, 10000, 2, 0.0, 107.339, 83.4333);
 		fogDevices.add(fogdevice);
 		fogdevice.setParentId(parentId);
-		fogdevice.setUplinkLatency(2); // latency of connection between gateways and FogResource server is 0 ms
+		fogdevice.setUplinkLatency(2); // latency of connection between gateways and FogResource server is 2 ms
 		addEdgeResourcess("DCNS:"+id, fogdevice.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
 		addEdgeResourcess("VRLG:"+id, fogdevice.getId()); // adding a fog device for every Gateway in physical topology. The parent of each gateway is the Proxy Server
 		return fogdevice;

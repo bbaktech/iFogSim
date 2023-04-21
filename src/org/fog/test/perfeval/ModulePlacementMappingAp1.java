@@ -64,19 +64,6 @@ public class ModulePlacementMappingAp1 extends ModulePlacement{
 			moduleMapping.addModuleToDevice("motion_detector","cloud" );  
 			moduleMapping.addModuleToDevice("object_detector","cloud" ); // placing all instances of Object Detector module in the FogDevices
 			moduleMapping.addModuleToDevice("object_tracker","cloud" ); // placing all instances of Object Tracker module in the FogDevices
-//			moduleMapping.addModuleToDevice("object_detector", "cloud"); // placing all instances of Object Tracker module in the FogDevices
-//			moduleMapping.addModuleToDevice("object_tracker", "cloud"); 
-//			moduleMapping.addModuleToDevice("user_interface", "cloud"); // fixing all instances of the user_interface module to the Cloud
-//
-//			for(FogDevice device : fogDevices){
-//				if(device.getName().startsWith("m-D")){
-//					moduleMapping.addModuleToDevice("motion_detector", device.getName());  
-//				}
-////				if(device.getName().startsWith("d")){
-////					moduleMapping.addModuleToDevice("object_tracker", device.getName()); // placing all instances of Object Tracker module in the FogDevices
-////					moduleMapping.addModuleToDevice("object_detector",device.getName()); // placing all instances of Object Detector module in the FogDevices
-////				}
-//			}
 			break;
 		case 2:
 			moduleMapping.addModuleToDevice("user_interface", "cloud"); // fixing all instances of the user_interface module to the Cloud
