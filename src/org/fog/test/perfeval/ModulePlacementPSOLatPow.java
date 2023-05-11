@@ -19,7 +19,7 @@ import org.fog.placement.ModuleMapping;
 import org.fog.placement.ModulePlacement;
 import org.fog.utils.TimeKeeper;
 
-class Particle {
+class ParticleLatPow {
 	
 	AppLoop apploop;
 	List<FogDevice>  no_devises;
@@ -29,11 +29,13 @@ class Particle {
 	
 	double fitness ;
 	double pBestfitness ;
+//	double energy_fitness;
+//	double pbestEnergy_fitness;
 	
 	int[][] indextble = new int[8][8];
 	int[][] pBestindextble = new int[8][8];
 	
-	Particle(List<FogDevice> fds, List<AppModule> mdls, AppLoop apploop, List <AppEdge> listedges) {
+	ParticleLatPow(List<FogDevice> fds, List<AppModule> mdls, AppLoop apploop, List <AppEdge> listedges) {
 		this.no_devises =fds ;  
 		this.no_modules =mdls; 
 		this.apploop = apploop;
@@ -75,6 +77,7 @@ class Particle {
 	double ComputeFitness() {
 		
 		double loopdelay = 0.0;
+		double powerUtilised = 0.0;
 		List <String> loop_modules = apploop.getModules();	
 		System.out.println(loop_modules);
 		
@@ -84,43 +87,85 @@ class Particle {
 				if (appedge.getSource().equalsIgnoreCase(loop_modules.get(i)) && appedge.getDestination().equalsIgnoreCase(loop_modules.get(i+1))) {
 					double tplCpuLenth = appedge.getTupleCpuLength();
 					double tplNwLenth= appedge.getTupleNwLength();
-//					System.out.println("Source:"+appedge.getSource()+ " Distination:"+appedge.getDestination() + " CPU ln:" +tplCpuLenth + " NW L"+ tplNwLenth);	
-					
+				
 					double latncy = 0;
 					double cpuMips =0;
-
+					double powerTrnsmit = 0;
+					double powerComput = 0;
+					
 					if (appedge.getEdgeType() == AppEdge.ACTUATOR) {
 						latncy =1;
 						latncy = latncy + GetLatencySourcToDest(loop_modules.get(i),null);
 						loopdelay = loopdelay + latncy*tplNwLenth  ;
-//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth);	
-//						System.out.println(loopdelay);
+						powerTrnsmit = powerTrnsmit + latncy* GetModuleMapedSourcePowerPerSec(appedge.getSource())*tplNwLenth;
+						powerComput = 0;
+						powerUtilised = powerUtilised + powerTrnsmit;
 
 					} else if (appedge.getEdgeType() == AppEdge.SENSOR) {
 						latncy = 6;		//assuming SENSOR is at mobile devise(MAX_LEVE -1)				
 						latncy = latncy + GetLatencySourcToDest(null,loop_modules.get(i+1));
 						cpuMips = GetModuleMapedResoureMIPS(appedge.getDestination());	
 						loopdelay = loopdelay + latncy*tplNwLenth + tplCpuLenth /cpuMips*1000 ;					
-//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" NoOfInstructions:"+ tplCpuLenth + " Speed(MilionIPS):"+cpuMips );	
-//						System.out.println(loopdelay);
-
+						powerTrnsmit = powerTrnsmit + latncy*tplNwLenth * GetModuleMapedSourcePowerPerSec(appedge.getDestination());
+						powerComput = powerComput + tplCpuLenth /cpuMips*1000 * GetModuleMapedDestPowerPerSec(appedge.getDestination());
+						powerUtilised = powerUtilised + powerTrnsmit + powerComput;
 					} else {
 						cpuMips = GetModuleMapedResoureMIPS(appedge.getDestination());	
 						latncy = GetLatencySourcToDest(loop_modules.get(i),loop_modules.get(i+1));
 						loopdelay = loopdelay + latncy*tplNwLenth + tplCpuLenth /cpuMips*1000  ;
-//						System.out.println("latncy:"+latncy +" tplNwLenth:"+tplNwLenth+" NoOfInstructions:"+ tplCpuLenth + " Speed(MilionIPS):"+cpuMips );	
-//						System.out.println(loopdelay);
 						//latency in milliseconds, network_length in Bytes, CPU_length in bytes	,	CPU(speed) in Million Instruction Per Second
+						powerTrnsmit = powerTrnsmit + latncy*tplNwLenth * GetModuleMapedSourcePowerPerSec(appedge.getSource());
+						powerComput = powerComput + tplCpuLenth /cpuMips*1000 * GetModuleMapedDestPowerPerSec(appedge.getDestination());
+						powerUtilised = powerUtilised + powerTrnsmit + powerComput;
 					}
 					break;
 				}
 			}
 		}
-		System.out.println("Total loopdelay(seconds)"+loopdelay/1000);
-		fitness = loopdelay/1000;
-    	return fitness;	
+		System.out.println("Total Power Fitness:"+powerUtilised);
+		System.out.println("Total Latency Fitness(seconds)"+loopdelay/1000);
+//		what is the relation ship between delay and power consumption(which should be given priority)
+//		fitness = loopdelay/1000;
+		fitness = powerUtilised;
+		return fitness;	
 	}
-		
+
+	private double GetModuleMapedDestPowerPerSec(String dest) {
+		// TODO Auto-generated method stub
+		FogDevice Dev =	GetModuleMapedResoure(dest);
+		int l = Dev.getLevel();
+		double punit = 0;
+		switch (l) {		
+			case 0: punit = 10*16; 
+				break;
+			case 1:punit = 25 ;
+				break;
+			case 2:punit = 15 ;
+				break;
+			case 3:punit = 5 ;
+				break;
+		}
+		return (punit);
+	}
+
+	private double GetModuleMapedSourcePowerPerSec(String source) {
+		// TODO Auto-generated method stub
+		FogDevice Dev = GetModuleMapedResoure(source);
+		double punit = 0;
+		int l = Dev.getLevel();
+		switch (l) {		
+			case 0: punit = 10*16; 
+				break;
+			case 1:punit = 25 ;
+				break;
+			case 2:punit = 15 ;
+				break;
+			case 3:punit = 5 ;
+				break;		
+		}
+		return (punit);
+	}
+
 	private FogDevice GetModuleMapedResoure(String m) {
 		FogDevice fd = null;		
 //		List<AppModule> no_modules;
@@ -247,7 +292,7 @@ class Particle {
 		
 	}
 	
-	void MoveParticle(int dist , Particle toParticle ) {
+	void MoveParticle(int dist , ParticleLatPow toParticle ) {
 		
 		if (toParticle != null) {
 			for ( int i = 0 ;i<  MaxDeviceLeve+1;i++) {
@@ -307,7 +352,7 @@ class Particle {
 	}
 }
 
-public class ModulePlacementPSOBase extends ModulePlacement{
+public class ModulePlacementPSOLatPow extends ModulePlacement{
 
 	private ModuleMapping moduleMapping;
 	public static int MAX_NO_MODLS = 4;
@@ -317,7 +362,7 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 	List <AppModule> apMdls;
 	List <AppEdge> appedges; 
 	List <AppLoop> apploops;
-	Particle selected_particel;
+	ParticleLatPow selected_particel;
 	
 	@Override
 
@@ -336,7 +381,7 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 			}
 	}
 
-	public ModulePlacementPSOBase(List<FogDevice> fogDevices, List<Sensor> sensors, List<Actuator> actuators, 
+	public ModulePlacementPSOLatPow(List<FogDevice> fogDevices, List<Sensor> sensors, List<Actuator> actuators, 
 			Application application, ModuleMapping moduleMapping){
 		this.setFogDevices(fogDevices);
 		this.setApplication(application);
@@ -365,22 +410,22 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 		
 		AppLoop apploop = apploops.get(0);
 		
-		List <Particle> particles = new LinkedList<Particle>(); 
+		List <ParticleLatPow> particles = new LinkedList<ParticleLatPow>(); 
 		
 		for (int i = 0 ; i <NO_PARTICLES; i++) {
-			Particle p = new Particle(getFogDevices(),apMdls, apploop, appedges);
+			ParticleLatPow p = new ParticleLatPow(getFogDevices(),apMdls, apploop, appedges);
 			p.RandumInitialize();
 			particles.add(p);
 		}		
 
 //PSO Algorithm	loop	
-		Particle gBest_particel = particles.get(0);
+		ParticleLatPow gBest_particel = particles.get(0);
 		double gBest = gBest_particel.pBestfitness;
 
 		for (int iCont = 0 ; iCont <NO_ITERATIONS; iCont++) {
 		
 				for (int i = 0 ; i <particles.size(); i++) {
-					Particle p = particles.get(i);
+					ParticleLatPow p = particles.get(i);
 					if ( gBest > p.pBestfitness) {
 						gBest_particel = p;
 						gBest = p.pBestfitness;			
@@ -388,7 +433,7 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 				}
 				//compute Velocity and move each particles to pBest or gBest base on random number
 				int speed = 2;
-				Particle TowardsParticle = null;				
+				ParticleLatPow TowardsParticle = null;				
 				Random rand = new Random();
 				
 				int r = rand.nextInt(4);
@@ -408,7 +453,7 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 				
 				//move each particle to new position with speed and diractionTowards				
 				for (int i = 0 ; i <particles.size(); i++) {
-					Particle p = particles.get(i);
+					ParticleLatPow p = particles.get(i);
 					p.MoveParticle(speed,TowardsParticle);
 				}	
 		}
@@ -464,7 +509,6 @@ public class ModulePlacementPSOBase extends ModulePlacement{
 				else direction = Tuple.UP;
 				
 				appedge.setDirection(direction);				
-				
 //				System.out.println("Direction:" +appedge.getDirection());				
 			}
 		}

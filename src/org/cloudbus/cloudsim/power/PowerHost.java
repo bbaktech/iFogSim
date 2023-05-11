@@ -99,6 +99,17 @@ public class PowerHost extends HostDynamicWorkload {
 		}
 		return power;
 	}
+	
+	public double getIdelPower() {
+		double power = 0;
+		try {
+			power = getPowerModel().getPower(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+		return power;
+	}
 
 	/**
 	 * Gets the energy consumption using linear interpolation of the utilization change.
