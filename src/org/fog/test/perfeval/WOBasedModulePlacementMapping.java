@@ -349,6 +349,7 @@ public class WOBasedModulePlacementMapping extends ModulePlacement{
 //WO Algorithm	loop	
 		 Whale gBest_whalel = whales.get(0);
 		double gBest = gBest_whalel.fitness;
+		int bestind = 0;
 		
 		double A = 2.0;
 		double step_a = 2.0/NO_ITERATIONS;
@@ -358,25 +359,27 @@ public class WOBasedModulePlacementMapping extends ModulePlacement{
 		
 //updating better solution
 			for (int i = 0 ; i <whales.size(); i++) {
-					Whale w = whales.get(i);
-					
+					Whale w = whales.get(i);					
 					if ( gBest > w.fitness) {
 						gBest_whalel = w;
-						gBest = w.fitness;			
+						gBest = w.fitness;
+						bestind = i;
 					}
 			}
-								
+			Whale gw = new Whale(getFogDevices(),apMdls, apploop, appedges);
+			gw.Copy(gBest_whalel);
+			
 				//move each  to new position with speed and diractionTowards				
 			for (int i = 0 ; i <whales.size(); i++) {
 				 Whale w = whales.get(i);
-				 
+				 if (i!=bestind) {
 				// update Whale-logic goes here
 					Random rand = new Random();
 					
 					float p = rand.nextFloat(1);
 					System.out.println("p:"+p + "Iteration:"+iCont);
 					if (p < 0.5) {
-						
+							a = A - step_a * i;
 							if (a<1) {	
 							//update to current best -->attack
 								w.Copy(gBest_whalel);
@@ -390,6 +393,8 @@ public class WOBasedModulePlacementMapping extends ModulePlacement{
 						//spiral rotate (whale is change by distance 2 towards Best)
 						w.MoveWhale(2, gBest_whalel);
 					} 
+				 }
+
 			}	
 		}
 	
